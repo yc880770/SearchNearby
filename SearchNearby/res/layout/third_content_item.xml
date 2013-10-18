@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:padding="5dp"
+              android:background="@drawable/bg_tab_top"
+              android:gravity="center"
+              android:layout_height="wrap_content">
+            <TextView android:id="@+id/third_content_list_textView"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:text="餐饮服务"
+                    android:textColor="#000000"
+                    android:textSize="14dp"/>
+</LinearLayout>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+        <LinearLayout android:layout_height="44dp"
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:background="@drawable/bg_title_bar"
+                android:orientation="horizontal">
+                <ImageButton
+                        android:layout_width="44dp"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_nav_back"
+                        android:padding="0dp"
+                        android:onClick="goBackClick"
+                        android:scaleType="centerInside"
+                        android:background="@drawable/btn_weight_item"/>
+                <TextView android:layout_width="match_parent"
+                          android:layout_height="match_parent"
+                          android:gravity="center"
+                          android:layout_weight="1"
+                          android:id="@+id/list_title_textView"
+                        android:text="四川菜（川菜）"
+                        android:textSize="20dp"
+                        android:textColor="#ffffff"/>
+                <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_action_map"
+                        android:background="@drawable/btn_weight_item"
+                        />
+        </LinearLayout>
+        <LinearLayout android:layout_height="40dp"
+                android:layout_width="fill_parent"
+                android:gravity="center"
+                android:background="#ffffff">
+                <TextView android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="范围：3000m内"
+                        android:textColor="#000000"
+                        android:textSize="20dp"/>
+                <ImageView android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:src="@drawable/ic_arrow_down"/>
+        </LinearLayout>
+    <ListView android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:id="@+id/list_content_listView"
+              android:background="@drawable/bg_tab_top"/>
+</LinearLayout>
+

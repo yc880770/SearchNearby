@@ -1,0 +1,10 @@
+[{"name":"中餐厅","id":"11","isSubordinate":"true"}
+ {"name":"外国餐厅","id":"12","isSubordinate":"true"}
+ {"name":"快餐厅","id":"13","isSubordinate":"true"}
+ {"name":"休闲餐饮场所","id":"14","isSubordinate":"true"}
+ {"name":"咖啡厅","id":"15","isSubordinate":"true"}
+ {"name":"茶艺馆","id":"16","isSubordinate":"true"}
+ {"name":"冷饮店","id":"17","isSubordinate":"true"}
+ {"name":"糕饼店","id":"18","isSubordinate":"true"}
+ {"name":"甜品店","id":"19","isSubordinate":"true"}
+]

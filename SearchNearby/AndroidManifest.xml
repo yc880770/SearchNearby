@@ -27,6 +27,9 @@
         <activity android:name=".view.SecondActivity">
 
         </activity>
+        <activity android:name=".view.ParticularsActivity">
+
+        </activity>
         <activity android:name=".view.IndexActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

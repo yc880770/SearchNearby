@@ -116,7 +116,7 @@ public class ListActivity extends Activity {
                     JSONArray  ja = jsonObject.getJSONArray("poilist");
                     for (int i = 0; i < ja.length(); i++) {
                         JSONObject jo = (JSONObject) ja.get(i);
-                         Map<String,Object> map = new HashMap<String, Object>();
+                        Map<String,Object> map = new HashMap<String, Object>();
                         map.put("name", jo.get("name"));
                         map.put("distance", jo.get("distance")+".00米");
                         map.put("address", jo.get("address"));

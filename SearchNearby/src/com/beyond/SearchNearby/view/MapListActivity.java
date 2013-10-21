@@ -135,9 +135,6 @@ public class MapListActivity  extends Activity {
             @Override
             protected void onPreExecute() {
                 progressDialog.show();
-
-
-
             }
 
             @Override
@@ -180,7 +177,7 @@ public class MapListActivity  extends Activity {
         protected boolean onTap(int i) {
             Log.d("BaiduMapDemo", "onTap " + i);
             com.baidu.mapapi.map.OverlayItem item = itemItemizedOverlay.getItem(i);
-            GeoPoint point = item.getPoint();
+            final GeoPoint point = item.getPoint();
             String title = item.getTitle();
             String content = item.getSnippet();
 
@@ -205,6 +202,16 @@ public class MapListActivity  extends Activity {
             mapPopWindow.setVisibility(View.VISIBLE);
 
             mapPopWindow.setLayoutParams(layoutParam);
+            mapPopWindow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MapListActivity.this,ParticularsActivity.class);
+                    mapView.getOverlays().clear();
+                    intent.putExtra(ParticularsActivity.POILatitude,point.getLatitudeE6());
+                    intent.putExtra(ParticularsActivity.POILongitude,point.getLongitudeE6());
+                    startActivity(intent);
+                }
+            });
 
             mapController.animateTo(point);
 

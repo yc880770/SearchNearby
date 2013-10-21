@@ -15,8 +15,11 @@ public class DemoApplication extends Application {
     private static DemoApplication mInstance = null;
     public boolean m_bKeyRight = true;
     public BMapManager mBMapManager = null;
+//   debug
+//    public static final String strKey = "7b856da0b9349192f6bf6151a703e24c";
 
-    public static final String strKey = "7b856da0b9349192f6bf6151a703e24c";
+//    手机
+   public static final String strKey = "42fd0aa75b9e4f73af6d8c4261f303dc";
 
     /*
     	注意：为了给用户提供更安全的服务，Android SDK自v2.1.3版本开始采用了全新的Key验证体系。

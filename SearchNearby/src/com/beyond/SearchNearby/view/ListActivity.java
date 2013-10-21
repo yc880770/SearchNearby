@@ -67,7 +67,7 @@ public class ListActivity extends Activity {
                 linearLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        itemClick(index,title);
+//                        itemClick(index,title);
                     }
                 });
 
@@ -120,6 +120,7 @@ public class ListActivity extends Activity {
                         map.put("name", jo.get("name"));
                         map.put("distance", jo.get("distance")+".00米");
                         map.put("address", jo.get("address"));
+//                        Log.d("jsonObject ",jo.toString());
                         dataList.add(map);
 
                     }
@@ -163,9 +164,8 @@ public class ListActivity extends Activity {
         asyncTask.execute(0);
     }
 
-    private void itemClick(int position,String title) {
+    private void itemClick(String title) {
         Intent intent = new Intent(this,MapListActivity.class);
-        intent.putExtra(SecondActivity.dataIndex,position);
         intent.putExtra(SecondActivity.dataText,titleTextView.getText().toString());
         startActivity(intent);
     }
@@ -181,4 +181,9 @@ public class ListActivity extends Activity {
     public void goBackClick(View view){
         this.finish();
     }
+    public void goNextView(View  view)
+    {
+        itemClick(this.getTitle().toString());
+    }
 }
+

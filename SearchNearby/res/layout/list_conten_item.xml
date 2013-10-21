@@ -19,7 +19,6 @@
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:textColor="#000000"
-
                   android:gravity="left"
                   android:layout_weight="1"
                   android:id="@+id/list_content_left_textView">
@@ -40,7 +39,6 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="left"
-
             android:id="@+id/list_content_item_bottom_textView">
 
     </TextView>

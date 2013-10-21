@@ -7,7 +7,9 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.baidu.mapapi.BMapManager;
@@ -34,12 +36,13 @@ public class MapListActivity  extends Activity {
     private MapView mapView;
     private MapController mapController;
     private TextView titleTextView;
-    private View  viewCache;
-    private TextView popNameText;
-    private PopupOverlay pop;
+    private LayoutInflater layoutInflater;
+    private View mapPopWindow;
+    private PoiOverlay<OverlayItem> itemItemizedOverlay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         DemoApplication app = (DemoApplication)this.getApplication();
         if (app.mBMapManager == null) {
             app.mBMapManager = new BMapManager(this);
@@ -54,10 +57,14 @@ public class MapListActivity  extends Activity {
         mapController.setZoom(14);
         mapView.getController().enableClick(true);
         mapView.setBuiltInZoomControls(true);
-//
-        GeoPoint geoPoint=new GeoPoint((int) (DemoApplication.locData.latitude * 1E6), (int) (DemoApplication.locData.longitude * 1E6));
         Drawable marker = getResources().getDrawable(R.drawable.ic_loc_normal);
-        mapController.setCenter(geoPoint);
+        itemItemizedOverlay = new PoiOverlay<OverlayItem>(marker, mapView);
+//
+
+        layoutInflater = LayoutInflater.from(this);
+        mapPopWindow = layoutInflater.inflate(R.layout.custom_text_view, null);
+        mapPopWindow.setVisibility(View.GONE);
+        mapView.addView(mapPopWindow);
     }
 
     @Override
@@ -69,19 +76,6 @@ public class MapListActivity  extends Activity {
         super.onResume();
     }
 
-    public void createPaopao(){
-        viewCache = getLayoutInflater().inflate(R.layout.custom_text_view, null);
-        popNameText =(TextView) viewCache.findViewById(R.id.custom_name_textView);
-        //泡泡点击响应回调
-        PopupClickListener popListener = new PopupClickListener(){
-            @Override
-            public void onClickedPopup(int index) {
-//                Log.v("click", "clickapoapo");
-            }
-        };
-        pop = new PopupOverlay(mapView,popListener);
-        MyLocationMapView.pop = pop;
-    }
 
     private void initData(String text) {
 
@@ -105,13 +99,29 @@ public class MapListActivity  extends Activity {
                     Log.d("ListAcitvity", requestStr) ;
                     JSONObject jsonObject = new JSONObject(requestStr);
                     JSONArray ja = jsonObject.getJSONArray("poilist");
+                    GeoPoint geoPoint=new GeoPoint((int) (DemoApplication.locData.latitude * 1E6), (int) (DemoApplication.locData.longitude * 1E6));
+                    int MaxX=0;
+                    int MinY=(int)(DemoApplication.locData.latitude);
+                    int MinX=(int)(DemoApplication.locData.longitude);
+                    int MaxY=0;
+                    OverlayItem myOverlayItem = new OverlayItem(geoPoint, "我的位置", "");
+                    myOverlayItem.setMarker(getResources().getDrawable(R.drawable.ic_current_loc));
+                    mapController.setCenter(geoPoint);
                     for (int i = 0; i < ja.length(); i++) {
                         JSONObject jo = (JSONObject) ja.get(i);
-                        Map<String,Object> map = new HashMap<String, Object>();
-                        map.put("name", jo.get("name"));
-                        map.put("distance", jo.get("distance")+".00米");
-                        map.put("address", jo.get("address"));
+                        int y = (int)(jo.getDouble("y")*1E6);
+                        int x = (int)(jo.getDouble("x")*1E6);
+                        MaxX =  Math.max(MaxX,x);
+                        MinX =  Math.max(MinX,x);
+                        MaxY =  Math.max(MaxY,y);
+                        MinY =  Math.max(MinY,y);
+                        GeoPoint point = new GeoPoint(y,x);
+                        OverlayItem overlayItem = new OverlayItem(point, jo.getString("name"),  jo.getString("address"));
+                        itemItemizedOverlay.addItem(overlayItem);
                     }
+                    itemItemizedOverlay.addItem(myOverlayItem);
+                    mapController.zoomToSpan(Math.abs(MaxY-MinY),Math.abs(MaxX-MinX));
+                    mapView.getOverlays().add(itemItemizedOverlay);
                 } catch (IOException e) {
                     return ListActivity.ERROR_SERVER;
                 } catch (JSONException e) {
@@ -135,7 +145,6 @@ public class MapListActivity  extends Activity {
                 progressDialog.dismiss();
                 if (request == ListActivity.SUSSES) {
                    mapView.refresh();
-
                 } else if (request ==ListActivity.ERROR_SERVER)
                 {
                     showServerErrorMessage();
@@ -161,5 +170,54 @@ public class MapListActivity  extends Activity {
         this.finish();
     }
 
+    class PoiOverlay<OverlayItem> extends ItemizedOverlay {
 
+        public PoiOverlay(Drawable drawable, MapView mapView) {
+            super(drawable, mapView);
+        }
+
+        @Override
+        protected boolean onTap(int i) {
+            Log.d("BaiduMapDemo", "onTap " + i);
+            com.baidu.mapapi.map.OverlayItem item = itemItemizedOverlay.getItem(i);
+            GeoPoint point = item.getPoint();
+            String title = item.getTitle();
+            String content = item.getSnippet();
+
+            TextView titleTextView = (TextView) mapPopWindow.findViewById(R.id.custom_name_textView);
+            TextView contentTextView = (TextView) mapPopWindow.findViewById(R.id.custom_text_textView);
+            titleTextView.setText(title);
+            contentTextView.setText(content);
+            contentTextView.setVisibility(View.VISIBLE);
+
+            MapView.LayoutParams layoutParam = new MapView.LayoutParams(
+                    //控件宽,继承自ViewGroup.LayoutParams
+                    MapView.LayoutParams.WRAP_CONTENT,
+                    //控件高,继承自ViewGroup.LayoutParams
+                    MapView.LayoutParams.WRAP_CONTENT,
+                    //使控件固定在某个地理位置
+                    point,
+                    0,
+                    -40,
+                    //控件对齐方式
+                    MapView.LayoutParams.BOTTOM_CENTER);
+
+            mapPopWindow.setVisibility(View.VISIBLE);
+
+            mapPopWindow.setLayoutParams(layoutParam);
+
+            mapController.animateTo(point);
+
+            return super.onTap(i);
+        }
+
+        @Override
+        public boolean onTap(GeoPoint geoPoint, MapView mapView) {
+            Log.d("BaiduMapDemo", "onTap geoPoint " + geoPoint);
+
+            mapPopWindow.setVisibility(View.GONE);
+
+            return super.onTap(geoPoint, mapView);    //To change body of overridden methods use File | Settings | File Templates.
+        }
+    }
 }

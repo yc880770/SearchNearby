@@ -34,15 +34,19 @@
                         android:background="@drawable/btn_weight_item"
                         />
         </LinearLayout>
-        <LinearLayout android:layout_height="40dp"
+        <LinearLayout android:layout_height="30dp"
                 android:layout_width="fill_parent"
                 android:gravity="center"
                 android:background="#ffffff">
+
                 <TextView android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:hint="范围："
+                        android:id="@+id/map_spinner"
                         android:text="范围：3000m内"
                         android:textColor="#000000"
-                        android:textSize="20dp"/>
+                        android:textSize="14dp"
+                        />
                 <ImageView android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
                         android:src="@drawable/ic_arrow_down"/>

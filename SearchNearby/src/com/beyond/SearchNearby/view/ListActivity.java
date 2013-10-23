@@ -59,15 +59,18 @@ public class ListActivity extends Activity {
                 TextView distanceView= (TextView) convertView.findViewById(R.id.list_content_item_right_textView);
                 TextView addressView= (TextView) convertView.findViewById(R.id.list_content_item_bottom_textView);
                 LinearLayout linearLayout= (LinearLayout) convertView.findViewById(R.id.list_content_item_linearLayout);
-                final  int index = position;
+
                 final  String  title = map.get("name").toString();
                 nameView.setText(title);
                 distanceView.setText(map.get("distance").toString());
                 addressView.setText(map.get("address").toString());
+                final int x = (int) (Double.parseDouble(map.get("x").toString())*1E6);
+                final int y = (int) (Double.parseDouble(map.get("y").toString())*1E6);
                 linearLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        itemClick(index,title);
+                        Log.d("setOnClickListener","x="+x+" y= "+y);
+                        goMapView(y, x);
                     }
                 });
 
@@ -75,25 +78,31 @@ public class ListActivity extends Activity {
             }
         };
         contentListView.setAdapter(simpleAdapter);
+        init();
+    }
+
+    private void goMapView(int latitude,int longitude) {
+        Intent intent = new Intent(this,ParticularsActivity.class);
+        intent.putExtra(ParticularsActivity.POILatitude,latitude);
+        intent.putExtra(ParticularsActivity.POILongitude,longitude);
+        startActivity(intent);
     }
 
     @Override
     protected void onResume() {
-        init();
-
         super.onResume();
     }
 
     private void init() {
         Intent intent = getIntent();
-       String title =  intent.getStringExtra(SecondActivity.dataText);
-       int index =  intent.getIntExtra(SecondActivity.dataIndex, 1);
-       titleTextView.setText(title);
-       initData(index, title);
+        String title =  intent.getStringExtra(SecondActivity.dataText);
+        Log.d("checkName",title+"");
+        titleTextView.setText(title);
+        initData( title);
     }
 
-    private void initData(int position,String text) {
-        final int index = position;
+    private void initData(String text) {
+
         final String title = text;
 
         final ProgressDialog progressDialog = new ProgressDialog(ListActivity.this);
@@ -120,7 +129,8 @@ public class ListActivity extends Activity {
                         map.put("name", jo.get("name"));
                         map.put("distance", jo.get("distance")+".00米");
                         map.put("address", jo.get("address"));
-//                        Log.d("jsonObject ",jo.toString());
+                        map.put("y", jo.get("y"));
+                        map.put("x", jo.get("x"));
                         dataList.add(map);
 
                     }
@@ -146,12 +156,12 @@ public class ListActivity extends Activity {
             protected void onPostExecute(Integer request) {
                 progressDialog.dismiss();
                 if (request == SUSSES) {
-                      simpleAdapter.notifyDataSetChanged();
+                    simpleAdapter.notifyDataSetChanged();
 
                 } else if (request ==ERROR_SERVER)
                 {
                     showServerErrorMessage();
-                
+
                 } else if (request ==ERROR_DATA_FORMAT)
                 {
                     showDataErrorMessage();

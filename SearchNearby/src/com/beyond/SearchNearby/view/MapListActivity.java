@@ -1,7 +1,9 @@
 package com.beyond.SearchNearby.view;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -10,12 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.map.*;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.beyond.SearchNearby.R;
+import com.beyond.SearchNearby.util.MySpinnerAdapter;
 import com.beyond.SearchNearby.util.MyTools;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +40,7 @@ public class MapListActivity  extends Activity {
     private TextView titleTextView;
     private LayoutInflater layoutInflater;
     private View mapPopWindow;
+    private TextView spinner;
     private PoiOverlay<OverlayItem> itemItemizedOverlay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,22 @@ public class MapListActivity  extends Activity {
         }
         setContentView(R.layout.map);
         titleTextView = (TextView) findViewById(R.id.map_title_textView);
+        spinner = (TextView) findViewById(R.id.map_spinner);
+        final String[] spn1Data = new String[] { "1000米内", "2000米内", "3000米内","4000米内","5000米内","6000米内" };
+        spinner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MapListActivity.this);
+                builder.setItems(spn1Data,new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        spinner.setText("范围："+spn1Data[which]);
+                    }
+                });
+                builder.create().show();
+            }
+        });
+
         mapView = (MapView) findViewById(R.id.BDMap);
 //             获取地图控制
         mapController = mapView.getController();
@@ -65,14 +84,16 @@ public class MapListActivity  extends Activity {
         mapPopWindow = layoutInflater.inflate(R.layout.custom_text_view, null);
         mapPopWindow.setVisibility(View.GONE);
         mapView.addView(mapPopWindow);
-    }
-
-    @Override
-    protected void onResume() {
         Intent intent = getIntent();
         String title = intent.getStringExtra(SecondActivity.dataText);
         titleTextView.setText(title);
         initData(title);
+    }
+
+    @Override
+    protected void onResume() {
+
+        mapView.onResume();
         super.onResume();
     }
 
@@ -155,6 +176,8 @@ public class MapListActivity  extends Activity {
         asyncTask.execute(0);
     }
 
+
+
     private void showDataErrorMessage() {
         Toast.makeText(this, "数据格式错误", Toast.LENGTH_LONG).show();
     }
@@ -206,7 +229,7 @@ public class MapListActivity  extends Activity {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(MapListActivity.this,ParticularsActivity.class);
-                    mapView.getOverlays().clear();
+//                    mapView.getOverlays().clear();
                     intent.putExtra(ParticularsActivity.POILatitude,point.getLatitudeE6());
                     intent.putExtra(ParticularsActivity.POILongitude,point.getLongitudeE6());
                     startActivity(intent);
@@ -227,4 +250,33 @@ public class MapListActivity  extends Activity {
             return super.onTap(geoPoint, mapView);    //To change body of overridden methods use File | Settings | File Templates.
         }
     }
+
+    @Override
+    protected void onPause() {
+//        mapPopWindow.setVisibility(View.GONE);
+        mapView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+//       mapView.getOverlays().clear();
+        mapView.destroy();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mapView.onSaveInstanceState(outState);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mapView.onRestoreInstanceState(savedInstanceState);
+    }
+
+
 }

@@ -16,7 +16,8 @@
                         android:src="@drawable/ic_nav_back"
                         android:padding="0dp"
                         android:scaleType="centerInside"
-                        android:background="@drawable/btn_weight_item"/>
+                        android:background="@drawable/btn_weight_item"
+                        android:onClick="goBackClick"/>
                 <TextView android:layout_width="match_parent"
                           android:layout_height="match_parent"
                           android:gravity="center"
@@ -41,6 +42,7 @@
                        android:background="@drawable/particulars_choice"
                        android:button="@null"
                        android:gravity="center"
+                       android:id="@+id/particulars_walk_radioButton"
                        android:text="步行"
                        android:textColor="#000000"
                        android:textSize="20dp"
@@ -52,6 +54,7 @@
                      android:background="@drawable/particulars_choice"
                      android:button="@null"
                      android:text="公交"
+                     android:id="@+id/particulars_bus_radioButton"
                      android:gravity="center"
                      android:textColor="#000000"
                      android:textSize="20dp"/>
@@ -61,6 +64,7 @@
                      android:background="@drawable/particulars_choice"
                      android:button="@null"
                      android:text="驾车"
+                     android:id="@+id/particulars_car_radioButton"
                      android:gravity="center"
                      android:textColor="#000000"
                      android:textSize="20dp"

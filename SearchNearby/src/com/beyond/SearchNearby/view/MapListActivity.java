@@ -41,7 +41,13 @@ public class MapListActivity  extends Activity {
     private LayoutInflater layoutInflater;
     private View mapPopWindow;
     private TextView spinner;
+    private String tempText;
+    private int  tempRange = 3000;
+    private int  temp = 1;
     private PoiOverlay<OverlayItem> itemItemizedOverlay;
+    private Button leftButton;
+    private Button rightButton;
+    public static  String[] spn1Data  = new String[] { "1000米内", "2000米内", "3000米内","4000米内","5000米内","6000米内" };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +61,28 @@ public class MapListActivity  extends Activity {
         setContentView(R.layout.map);
         titleTextView = (TextView) findViewById(R.id.map_title_textView);
         spinner = (TextView) findViewById(R.id.map_spinner);
-        final String[] spn1Data = new String[] { "1000米内", "2000米内", "3000米内","4000米内","5000米内","6000米内" };
+
+
+        mapView = (MapView) findViewById(R.id.BDMap);
+//             获取地图控制
+        mapController = mapView.getController();
+        mapController.setZoom(14);
+        mapView.getController().enableClick(true);
+//        mapView.setBuiltInZoomControls(true);
+        Drawable marker = getResources().getDrawable(R.drawable.ic_loc_normal);
+        itemItemizedOverlay = new PoiOverlay<OverlayItem>(marker, mapView);
+//
+        leftButton = (Button) findViewById(R.id.map_left_button);
+        rightButton = (Button) findViewById(R.id.map_right_button);
+        layoutInflater = LayoutInflater.from(this);
+        mapPopWindow = layoutInflater.inflate(R.layout.custom_text_view, null);
+        mapPopWindow.setVisibility(View.GONE);
+        mapView.addView(mapPopWindow);
+        Intent intent = getIntent();
+        String title = intent.getStringExtra(SecondActivity.dataText);
+        titleTextView.setText(title);
+        tempText= title;
+        initData(title);
         spinner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,31 +91,69 @@ public class MapListActivity  extends Activity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         spinner.setText("范围："+spn1Data[which]);
+                        switch (which)
+                        {
+                            case  0:
+
+                                tempRange = 1000;
+                                initData(tempText);
+                                break;
+                            case  1:
+                                tempRange =2000;
+                                initData(tempText);
+                                break;
+                            case  2:
+                                tempRange = 3000;
+                                initData(tempText);
+                                break;
+                            case  3:
+                                tempRange = 4000;
+                                initData(tempText);
+                                break;
+                            case  4:
+                                tempRange = 5000;
+                                initData(tempText);
+                                break;
+                            case  5:
+                                tempRange = 6000;
+                                initData(tempText);
+                                break;
+
+
+                        }
                     }
                 });
                 builder.create().show();
             }
         });
+        leftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (temp>1)
+                {
+                   temp-=1;
+                    initData(tempText);
+                }else
+                {
+                    Toast.makeText(MapListActivity.this,"这是第一页",Toast.LENGTH_SHORT);
+                }
+            }
+        });
 
-        mapView = (MapView) findViewById(R.id.BDMap);
-//             获取地图控制
-        mapController = mapView.getController();
-        mapController.setZoom(14);
-        mapView.getController().enableClick(true);
-        mapView.setBuiltInZoomControls(true);
-        Drawable marker = getResources().getDrawable(R.drawable.ic_loc_normal);
-        itemItemizedOverlay = new PoiOverlay<OverlayItem>(marker, mapView);
-//
-
-        layoutInflater = LayoutInflater.from(this);
-        mapPopWindow = layoutInflater.inflate(R.layout.custom_text_view, null);
-        mapPopWindow.setVisibility(View.GONE);
-        mapView.addView(mapPopWindow);
-        Intent intent = getIntent();
-        String title = intent.getStringExtra(SecondActivity.dataText);
-        titleTextView.setText(title);
-        initData(title);
-    }
+        rightButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (temp<40)
+                {
+                    temp+=1;
+                    initData(tempText);
+                }else
+                {
+                    Toast.makeText(MapListActivity.this,"这是最后一页",Toast.LENGTH_SHORT);
+                }
+            }
+        });
+             }
 
     @Override
     protected void onResume() {
@@ -114,8 +179,10 @@ public class MapListActivity  extends Activity {
                 String coordinate = DemoApplication.locData.longitude+","+DemoApplication.locData.latitude;
                 String centre =title;
 
-                String url_username =php+"?coordinate="+coordinate+"&q="+centre+"&access_token=2.00KZZWLEREyGdC3cba17f3a70wTEoO";
+                String url_username =php+"?coordinate="+coordinate+"&q="+centre+"&access_token=2.00KZZWLEREyGdC3cba17f3a70wTEoO&range="+tempRange+"&page="+temp+"&count=20";
                 try {
+                    mapView.getOverlays().clear();
+                    itemItemizedOverlay.removeAll();
                     String requestStr  = MyTools.requestServerDate(url_username);
                     Log.d("ListAcitvity", requestStr) ;
                     JSONObject jsonObject = new JSONObject(requestStr);
@@ -133,13 +200,16 @@ public class MapListActivity  extends Activity {
                         int y = (int)(jo.getDouble("y")*1E6);
                         int x = (int)(jo.getDouble("x")*1E6);
                         MaxX =  Math.max(MaxX,x);
-                        MinX =  Math.max(MinX,x);
+                        MinX =  Math.min(MinX,x);
                         MaxY =  Math.max(MaxY,y);
-                        MinY =  Math.max(MinY,y);
+                        MinY =  Math.min(MinY,y);
+
                         GeoPoint point = new GeoPoint(y,x);
                         OverlayItem overlayItem = new OverlayItem(point, jo.getString("name"),  jo.getString("address"));
                         itemItemizedOverlay.addItem(overlayItem);
+
                     }
+                    Log.d("point","maxx="+MaxX+" minx="+MinX+" maxY"+MaxY+" MinY"+MinY);
                     itemItemizedOverlay.addItem(myOverlayItem);
                     mapController.zoomToSpan(Math.abs(MaxY-MinY),Math.abs(MaxX-MinX));
                     mapView.getOverlays().add(itemItemizedOverlay);
@@ -278,5 +348,9 @@ public class MapListActivity  extends Activity {
         mapView.onRestoreInstanceState(savedInstanceState);
     }
 
+    public void onClickRefresh(View view)
+    {
+         initData(tempText);
+    }
 
 }

@@ -1,7 +1,9 @@
 package com.beyond.SearchNearby.view;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -35,9 +37,13 @@ public class ListActivity extends Activity {
     public static final int ERROR_SERVER = 1;
     public static final int ERROR_DATA_FORMAT= 2;
     private TextView titleTextView;
+    private TextView spinner;
     private ListView contentListView ;
+    private int  tempRange = 3000;
+    private String tempText;
     private SimpleAdapter simpleAdapter ;
     private List<Map<String,Object>> dataList = new ArrayList<Map<String, Object>>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,8 +83,53 @@ public class ListActivity extends Activity {
                 return  convertView;
             }
         };
+
+        spinner= (TextView) findViewById(R.id.list_spinner);
         contentListView.setAdapter(simpleAdapter);
         init();
+        spinner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
+                builder.setItems(MapListActivity.spn1Data,new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        spinner.setText("范围："+MapListActivity.spn1Data[which]);
+                        switch (which)
+                        {
+                            case  0:
+
+                                tempRange = 1000;
+                                initData();
+                                break;
+                            case  1:
+                                tempRange =2000;
+                                initData();
+                                break;
+                            case  2:
+                                tempRange = 3000;
+                                initData();
+                                break;
+                            case  3:
+                                tempRange = 4000;
+                                initData();
+                                break;
+                            case  4:
+                                tempRange = 5000;
+                                initData();
+                                break;
+                            case  5:
+                                tempRange = 6000;
+                                initData();
+                                break;
+
+
+                        }
+                    }
+                });
+                builder.create().show();
+            }
+        });
     }
 
     private void goMapView(int latitude,int longitude) {
@@ -96,14 +147,13 @@ public class ListActivity extends Activity {
     private void init() {
         Intent intent = getIntent();
         String title =  intent.getStringExtra(SecondActivity.dataText);
-        Log.d("checkName",title+"");
         titleTextView.setText(title);
-        initData( title);
+        tempText = title;
+        initData();
     }
 
-    private void initData(String text) {
+    private void initData() {
 
-        final String title = text;
 
         final ProgressDialog progressDialog = new ProgressDialog(ListActivity.this);
         progressDialog.setMessage("刷新中。。。。");
@@ -115,9 +165,9 @@ public class ListActivity extends Activity {
             protected Integer doInBackground(Integer... string) {
                 String php ="https://api.weibo.com/2/location/pois/search/by_geo.json";
                 String coordinate = DemoApplication.locData.longitude+","+DemoApplication.locData.latitude;
-                String centre =title;
-
-                String url_username =php+"?coordinate="+coordinate+"&q="+centre+"&access_token=2.00KZZWLEREyGdC3cba17f3a70wTEoO";
+                String centre =tempText;
+                dataList.clear();
+                String url_username =php+"?coordinate="+coordinate+"&q="+centre+"&access_token=2.00KZZWLEREyGdC3cba17f3a70wTEoO&range="+tempRange;
                 try {
                     String requestStr  = MyTools.requestServerDate(url_username);
                     Log.d("ListAcitvity",requestStr) ;
@@ -195,5 +245,10 @@ public class ListActivity extends Activity {
     {
         itemClick(this.getTitle().toString());
     }
+    public void onClickRefresh(View view)
+    {
+        initData();
+    }
+
 }
 

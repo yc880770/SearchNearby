@@ -39,9 +39,12 @@ public class ListActivity extends Activity {
     private TextView titleTextView;
     private TextView spinner;
     private ListView contentListView ;
+    private TextView loadMoreView;
     private int  tempRange = 3000;
+    private int  temp = 1;
     private String tempText;
     private SimpleAdapter simpleAdapter ;
+
     private List<Map<String,Object>> dataList = new ArrayList<Map<String, Object>>();
 
     @Override
@@ -51,6 +54,10 @@ public class ListActivity extends Activity {
         setContentView(R.layout.list);
         titleTextView = (TextView) findViewById(R.id.list_title_textView);
         contentListView = (ListView) findViewById(R.id.list_content_listView);
+//        loadMoreView = (Button) findViewById(R.id.loadMore_button);
+        loadMoreView = (TextView) getLayoutInflater().inflate(R.layout.load_more_button,null);
+        contentListView.addFooterView(loadMoreView,null,false);
+
         simpleAdapter = new SimpleAdapter(this,dataList,R.layout.list_conten_item,new String[]{"name","distance","address"},new int[]{R.id.list_content_left_textView,R.id.list_content_item_right_textView,R.id.list_content_item_bottom_textView})
         {
             @Override
@@ -67,21 +74,24 @@ public class ListActivity extends Activity {
                 LinearLayout linearLayout= (LinearLayout) convertView.findViewById(R.id.list_content_item_linearLayout);
 
                 final  String  title = map.get("name").toString();
+                final  String  address = map.get("address").toString();
+                final  String  phone = map.get("phone").toString();
                 nameView.setText(title);
                 distanceView.setText(map.get("distance").toString());
-                addressView.setText(map.get("address").toString());
+                addressView.setText(address);
                 final int x = (int) (Double.parseDouble(map.get("x").toString())*1E6);
                 final int y = (int) (Double.parseDouble(map.get("y").toString())*1E6);
                 linearLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Log.d("setOnClickListener","x="+x+" y= "+y);
-                        goMapView(y, x);
+                        goMapView(y, x,title,address,phone);
                     }
                 });
 
                 return  convertView;
             }
+
         };
 
         spinner= (TextView) findViewById(R.id.list_spinner);
@@ -91,10 +101,13 @@ public class ListActivity extends Activity {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
+//                builder.setInverseBackgroundForced(true);
+//                builder.setView(spinner);
                 builder.setItems(MapListActivity.spn1Data,new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         spinner.setText("范围："+MapListActivity.spn1Data[which]);
+                        dataList.clear();
                         switch (which)
                         {
                             case  0:
@@ -125,17 +138,31 @@ public class ListActivity extends Activity {
 
 
                         }
+
                     }
                 });
                 builder.create().show();
             }
         });
+        loadMoreView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (temp<40)
+                {
+                    temp +=1;
+                    initData();
+                }
+            }
+        });
     }
 
-    private void goMapView(int latitude,int longitude) {
+    private void goMapView(int latitude,int longitude,String name,String address,String phone) {
         Intent intent = new Intent(this,ParticularsActivity.class);
         intent.putExtra(ParticularsActivity.POILatitude,latitude);
         intent.putExtra(ParticularsActivity.POILongitude,longitude);
+        intent.putExtra(ParticularsActivity.POI_NAME,name);
+        intent.putExtra(ParticularsActivity.POI_ADDRESS,address);
+        intent.putExtra(ParticularsActivity.POI_PHONE,phone);
         startActivity(intent);
     }
 
@@ -166,11 +193,10 @@ public class ListActivity extends Activity {
                 String php ="https://api.weibo.com/2/location/pois/search/by_geo.json";
                 String coordinate = DemoApplication.locData.longitude+","+DemoApplication.locData.latitude;
                 String centre =tempText;
-                dataList.clear();
-                String url_username =php+"?coordinate="+coordinate+"&q="+centre+"&access_token=2.00KZZWLEREyGdC3cba17f3a70wTEoO&range="+tempRange;
+
+                String url_username =php+"?coordinate="+coordinate+"&q="+centre+"&access_token=2.00KZZWLEREyGdC3cba17f3a70wTEoO&range="+tempRange+"&page="+temp;
                 try {
                     String requestStr  = MyTools.requestServerDate(url_username);
-                    Log.d("ListAcitvity",requestStr) ;
                     JSONObject jsonObject = new JSONObject(requestStr);
                     JSONArray  ja = jsonObject.getJSONArray("poilist");
                     for (int i = 0; i < ja.length(); i++) {
@@ -181,8 +207,9 @@ public class ListActivity extends Activity {
                         map.put("address", jo.get("address"));
                         map.put("y", jo.get("y"));
                         map.put("x", jo.get("x"));
+                        map.put("phone", jo.get("tel"));
+                        Log.d("linearLayout",jo.toString());
                         dataList.add(map);
-
                     }
                 } catch (IOException e) {
                     return ERROR_SERVER;
@@ -247,6 +274,7 @@ public class ListActivity extends Activity {
     }
     public void onClickRefresh(View view)
     {
+        dataList.clear();
         initData();
     }
 

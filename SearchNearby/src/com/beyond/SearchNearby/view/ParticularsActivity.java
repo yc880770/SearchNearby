@@ -2,19 +2,19 @@ package com.beyond.SearchNearby.view;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.EditText;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.map.*;
 import com.baidu.mapapi.search.*;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.beyond.SearchNearby.R;
+
+import java.util.ArrayList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,6 +26,9 @@ import com.beyond.SearchNearby.R;
 public class ParticularsActivity extends Activity {
     public static final String POILatitude="Latitude";
     public static final String POILongitude="Longitude";
+    public static final String POI_ADDRESS="POIAddress";
+    public static final String POI_NAME="POIName";
+    public static final String POI_PHONE="POIPhone";
     private int Y = 0;
     private int X = 0;
     private MapView mapView;
@@ -35,8 +38,9 @@ public class ParticularsActivity extends Activity {
     private TextView address;
     private TextView telephone;
     private RadioGroup radioGroup;
+    private boolean flag = false ;
     private MKRoute route;
-    private int type =1;
+    private LinearLayout linearLayout;
     private  TransitOverlay transitOverlay = null;//保存公交路线图层数据的变量，供浏览节点时使用
 
     private RouteOverlay routeOverlay = null;
@@ -60,9 +64,9 @@ public class ParticularsActivity extends Activity {
         address = (TextView) findViewById(R.id.particulars_address);
         poiName = (TextView) findViewById(R.id.particulars_poiName_textView);
         telephone = (TextView) findViewById(R.id.particulars_telephone_textView);
+        linearLayout = (LinearLayout) findViewById(R.id.particulars_call_linearLayout);
         mapController =  mapView.getController();
         radioGroup = (RadioGroup) findViewById(R.id.particulars_radioGroup);
-//        radioGroup.check(1098615480);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 
             @Override
@@ -71,7 +75,6 @@ public class ParticularsActivity extends Activity {
                 Log.d("mSearch","checkedId = "+(checkedId==R.id.particulars_walk_radioButton)) ;
                 if (checkedId == R.id.particulars_walk_radioButton)
                 {
-
                     SearchButtonProcess(1);
                 }else if (checkedId == R.id.particulars_bus_radioButton)
                 {
@@ -81,13 +84,12 @@ public class ParticularsActivity extends Activity {
                     SearchButtonProcess(3);
                 }
 
-                Log.d("particulars",checkedId+" checkedId ");
-                Log.d("particulars",R.id.particulars_walk_radioButton+" getCheckedRadioButtonId ");
             }
         });
         Log.d("particulars", radioGroup.getCheckedRadioButtonId()+"");
         Log.d("particulars", radioGroup.getCheckedRadioButtonId()+"");
-        mapView.setBuiltInZoomControls(false);
+//        mapView.setBuiltInZoomControls(false);
+        mapView.getController().enableClick(true);
 //        View.OnClickListener clickListener = new View.OnClickListener(){
 //            public void onClick(View v) {
 //                //发起搜索
@@ -116,8 +118,22 @@ public class ParticularsActivity extends Activity {
                 }
                 Toast.makeText(ParticularsActivity.this,"刷新驾车路线中。。。",Toast.LENGTH_SHORT);
                 routeOverlay = new RouteOverlay(ParticularsActivity.this, mapView);
+                route = res.getPlan(0).getRoute(0);
                 // 此处仅展示一个方案作为示例
-                routeOverlay.setData(res.getPlan(0).getRoute(0));
+//                if(!flag)
+//                {
+//                    res.getWpNode()
+//                    routeOverlay.
+//                    ArrayList<ArrayList<GeoPoint>> arrayLists = route.getArrayPoints();
+//                   GeoPoint st =  arrayLists.get(0).get(0);
+//                   GeoPoint   en =  arrayLists.get(arrayLists.size()-1).get(arrayLists.get(arrayLists.size()-1).size()-1);
+//                    arrayLists.get(0).remove(st);
+//                    arrayLists.get(arrayLists.size()-1).remove(en);
+//                    route.customizeRoute(st,en,arrayLists.toArray());
+//                }else
+//                {
+                    routeOverlay.setData(res.getPlan(0).getRoute(0));
+//                }
                 //清除其他图层
 //                mapView.getOverlays().clear();
                 //添加路线图层
@@ -129,9 +145,17 @@ public class ParticularsActivity extends Activity {
                 //移动地图到起点
                 mapView.getController().animateTo(res.getStart().pt);
                 //将路线数据保存给全局变量
-                route = res.getPlan(0).getRoute(0);
-                //重置路线节点索引，节点浏览时使用
 
+                //重置路线节点索引，节点浏览时使用
+                float f = route.getDistance();
+                f=f/500;
+                if (f<1)
+                {
+                    odometer.setText("全程约"+ route.getDistance()+"米,耗时约"+(int)(f*60)+"秒") ;
+                }else
+                {
+                    odometer.setText("全程约"+ route.getDistance()+"米,耗时约"+(int)(f)+"分钟") ;
+                }
             }
 
 //公交
@@ -153,6 +177,7 @@ public class ParticularsActivity extends Activity {
                 Toast.makeText(ParticularsActivity.this,"刷新公交路线中。。。",Toast.LENGTH_SHORT);
                 transitOverlay = new TransitOverlay(ParticularsActivity.this, mapView);
                 // 此处仅展示一个方案作为示例
+
                 transitOverlay.setData(res.getPlan(0));
                 //清除其他图层
 //                mapView.getOverlays().clear();
@@ -166,8 +191,15 @@ public class ParticularsActivity extends Activity {
 
                 mapView.getController().animateTo(res.getStart().pt);
                 route = res.getPlan(0).getRoute(0);
-                Log.d("route",res.getAddrResult().toString());
-
+                float f = route.getDistance();
+                f=f/200;
+                if (f<1)
+                {
+                    odometer.setText("全程约"+ route.getDistance()+"米,耗时约"+(int)(f*60)+"秒") ;
+                }else
+                {
+                    odometer.setText("全程约"+ route.getDistance()+"米,耗时约"+(int)(f)+"分钟") ;
+                }
             }
 
             public void onGetWalkingRouteResult(MKWalkingRouteResult res,
@@ -189,7 +221,23 @@ public class ParticularsActivity extends Activity {
                  Toast.makeText(ParticularsActivity.this,"刷新步行路线中。。。",Toast.LENGTH_SHORT);
                 routeOverlay = new RouteOverlay(ParticularsActivity.this, mapView);
                 // 此处仅展示一个方案作为示例
-                routeOverlay.setData(res.getPlan(0).getRoute(0));
+                route = res.getPlan(0).getRoute(0);
+//                if(!flag)
+//                {
+//                    res.getWpNode()
+//                    routeOverlay.
+//                    ArrayList<ArrayList<GeoPoint>> arrayLists = route.getArrayPoints();
+//                   GeoPoint st =  arrayLists.get(0).get(0);
+//                   GeoPoint   en =  arrayLists.get(arrayLists.size()-1).get(arrayLists.get(arrayLists.size()-1).size()-1);
+//                    arrayLists.get(0).remove(st);
+//                    arrayLists.get(arrayLists.size()-1).remove(en);
+//                    route.customizeRoute(route.getStart(),route.getEnd(),route.getArrayPoints());
+//                    Log.d("ArrayList<ArrayList<GeoPoint>>",arrayLists.toString());
+//                }else
+//                {
+                    routeOverlay.setData(res.getPlan(0).getRoute(0));
+//                }
+
                 //清除其他图层
 //                mapView.getOverlays().clear();
                 //添加路线图层
@@ -201,9 +249,23 @@ public class ParticularsActivity extends Activity {
                 //移动地图到起点
                 mapView.getController().animateTo(res.getStart().pt);
                 //将路线数据保存给全局变量
-                route = res.getPlan(0).getRoute(0);
-                //重置路线节点索引，节点浏览时使用
 
+                //重置路线节点索引，节点浏览时使用
+                float f = route.getDistance();
+                f=f/20;
+                if (f<1)
+                {
+                    odometer.setText("全程约"+ route.getDistance()+"米,耗时约"+(int)(f*60)+"秒") ;
+                }else
+                {
+                    odometer.setText("全程约"+ route.getDistance()+"米,耗时约"+(int)(f)+"分钟") ;
+                }
+
+
+
+//                     获取所有点
+//                     route.getArrayPoints();
+//                routeOverlay.
             }
             public void onGetAddrResult(MKAddrInfo res, int error) {
             }
@@ -227,8 +289,20 @@ public class ParticularsActivity extends Activity {
                 // TODO Auto-generated method stub
 
             }
+
         });
         initData();
+        linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!telephone.getText().toString().equals("")||telephone.getText().toString()!=null)
+                {
+                    Uri uri = Uri.parse("tel:"+telephone.getText().toString()) ;
+                    Intent intent = new Intent(Intent.ACTION_CALL,uri);
+                    startActivity(intent);
+                }
+            }
+        });
     }
 
 
@@ -243,6 +317,16 @@ public class ParticularsActivity extends Activity {
         Intent intent = getIntent();
         Y =  intent.getIntExtra(POILatitude,1);
         X =  intent.getIntExtra(POILongitude,2);
+        poiName.setText(intent.getStringExtra(POI_NAME));
+        address.setText(intent.getStringExtra(POI_ADDRESS));
+
+        if (intent.getStringExtra(POI_PHONE)==null||intent.getStringExtra(POI_PHONE).equals(""))
+        {
+            telephone.setText("暂无电话");
+        }else
+        {
+            telephone.setText(intent.getStringExtra(POI_PHONE));
+        }
         SearchButtonProcess(1);
 
     }
@@ -277,6 +361,7 @@ public class ParticularsActivity extends Activity {
         //驾车
         if (i==3) {
             mSearch.drivingSearch("西安", stNode, "西安", enNode);
+
             //公交
         } else if (i==2) {
             mSearch.transitSearch("西安", stNode, enNode);
@@ -316,5 +401,9 @@ public class ParticularsActivity extends Activity {
         mapView.onRestoreInstanceState(savedInstanceState);
     }
 
-
+    public void onClickChange(View view)
+    {
+        flag = true;
+//           initData();
+    }
 }

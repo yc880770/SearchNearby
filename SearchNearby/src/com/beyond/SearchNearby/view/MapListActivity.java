@@ -47,6 +47,10 @@ public class MapListActivity  extends Activity {
     private PoiOverlay<OverlayItem> itemItemizedOverlay;
     private Button leftButton;
     private Button rightButton;
+    private String name;
+    private String address;
+    private String phone;
+
     public static  String[] spn1Data  = new String[] { "1000米内", "2000米内", "3000米内","4000米内","5000米内","6000米内" };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,11 +135,12 @@ public class MapListActivity  extends Activity {
             public void onClick(View v) {
                 if (temp>1)
                 {
-                   temp-=1;
+                    temp-=1;
                     initData(tempText);
                 }else
                 {
                     Toast.makeText(MapListActivity.this,"这是第一页",Toast.LENGTH_SHORT);
+
                 }
             }
         });
@@ -146,14 +151,16 @@ public class MapListActivity  extends Activity {
                 if (temp<40)
                 {
                     temp+=1;
+
                     initData(tempText);
                 }else
                 {
+
                     Toast.makeText(MapListActivity.this,"这是最后一页",Toast.LENGTH_SHORT);
                 }
             }
         });
-             }
+    }
 
     @Override
     protected void onResume() {
@@ -184,13 +191,12 @@ public class MapListActivity  extends Activity {
                     mapView.getOverlays().clear();
                     itemItemizedOverlay.removeAll();
                     String requestStr  = MyTools.requestServerDate(url_username);
-                    Log.d("ListAcitvity", requestStr) ;
                     JSONObject jsonObject = new JSONObject(requestStr);
                     JSONArray ja = jsonObject.getJSONArray("poilist");
                     GeoPoint geoPoint=new GeoPoint((int) (DemoApplication.locData.latitude * 1E6), (int) (DemoApplication.locData.longitude * 1E6));
                     int MaxX=0;
-                    int MinY=(int)(DemoApplication.locData.latitude);
-                    int MinX=(int)(DemoApplication.locData.longitude);
+                    int MinY=(int)(DemoApplication.locData.latitude*1E6);
+                    int MinX=(int)(DemoApplication.locData.longitude*1E6);
                     int MaxY=0;
                     OverlayItem myOverlayItem = new OverlayItem(geoPoint, "我的位置", "");
                     myOverlayItem.setMarker(getResources().getDrawable(R.drawable.ic_current_loc));
@@ -199,17 +205,20 @@ public class MapListActivity  extends Activity {
                         JSONObject jo = (JSONObject) ja.get(i);
                         int y = (int)(jo.getDouble("y")*1E6);
                         int x = (int)(jo.getDouble("x")*1E6);
+                       address= jo.get("address").toString();
+                       name= jo.get("name").toString();
+                       phone= jo.get("tel").toString();
                         MaxX =  Math.max(MaxX,x);
                         MinX =  Math.min(MinX,x);
                         MaxY =  Math.max(MaxY,y);
-                        MinY =  Math.min(MinY,y);
-
+                        MinY =  Math.min( MinY,y);
                         GeoPoint point = new GeoPoint(y,x);
                         OverlayItem overlayItem = new OverlayItem(point, jo.getString("name"),  jo.getString("address"));
                         itemItemizedOverlay.addItem(overlayItem);
-
+//                      获取最大值
+//                      mapView.getLongitudeSpan();
+//                      mapView.getLatitudeSpan();
                     }
-                    Log.d("point","maxx="+MaxX+" minx="+MinX+" maxY"+MaxY+" MinY"+MinY);
                     itemItemizedOverlay.addItem(myOverlayItem);
                     mapController.zoomToSpan(Math.abs(MaxY-MinY),Math.abs(MaxX-MinX));
                     mapView.getOverlays().add(itemItemizedOverlay);
@@ -232,7 +241,7 @@ public class MapListActivity  extends Activity {
             protected void onPostExecute(Integer request) {
                 progressDialog.dismiss();
                 if (request == ListActivity.SUSSES) {
-                   mapView.refresh();
+                    mapView.refresh();
                 } else if (request ==ListActivity.ERROR_SERVER)
                 {
                     showServerErrorMessage();
@@ -268,7 +277,6 @@ public class MapListActivity  extends Activity {
 
         @Override
         protected boolean onTap(int i) {
-            Log.d("BaiduMapDemo", "onTap " + i);
             com.baidu.mapapi.map.OverlayItem item = itemItemizedOverlay.getItem(i);
             final GeoPoint point = item.getPoint();
             String title = item.getTitle();
@@ -302,6 +310,10 @@ public class MapListActivity  extends Activity {
 //                    mapView.getOverlays().clear();
                     intent.putExtra(ParticularsActivity.POILatitude,point.getLatitudeE6());
                     intent.putExtra(ParticularsActivity.POILongitude,point.getLongitudeE6());
+                    intent.putExtra(ParticularsActivity.POI_NAME,name);
+                    intent.putExtra(ParticularsActivity.POI_ADDRESS,address);
+                    intent.putExtra(ParticularsActivity.POI_PHONE,phone);
+                    Log.d("putExtra ",name +","+ address+","+phone);
                     startActivity(intent);
                 }
             });
@@ -313,8 +325,6 @@ public class MapListActivity  extends Activity {
 
         @Override
         public boolean onTap(GeoPoint geoPoint, MapView mapView) {
-            Log.d("BaiduMapDemo", "onTap geoPoint " + geoPoint);
-
             mapPopWindow.setVisibility(View.GONE);
 
             return super.onTap(geoPoint, mapView);    //To change body of overridden methods use File | Settings | File Templates.
@@ -330,7 +340,6 @@ public class MapListActivity  extends Activity {
 
     @Override
     protected void onDestroy() {
-//       mapView.getOverlays().clear();
         mapView.destroy();
         super.onDestroy();
     }
@@ -350,7 +359,9 @@ public class MapListActivity  extends Activity {
 
     public void onClickRefresh(View view)
     {
-         initData(tempText);
+        initData(tempText);
     }
+
+
 
 }

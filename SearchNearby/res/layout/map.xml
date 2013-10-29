@@ -92,6 +92,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_alignParentBottom="true"
                 android:layout_width="44dp"
+                android:onClick="locationOnclick"
                 android:layout_height="44dp"
         />
     </RelativeLayout>

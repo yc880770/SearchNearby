@@ -153,9 +153,10 @@ public class IndexActivity extends Activity {
                 Log.d("BaiduMapDemo", "onReceiveLocation Longitude " + bdLocation.getLongitude());
                  lng = bdLocation.getLongitude();
                  lat = bdLocation.getLatitude();
+
                 DemoApplication.locData.latitude = lat;
                 DemoApplication.locData.longitude = lng;
-                if (lng==0||lat==0)
+                if (lng==lat)
                 {
                      bottomTextView.setText("定位失败请重新定位");
                 }else

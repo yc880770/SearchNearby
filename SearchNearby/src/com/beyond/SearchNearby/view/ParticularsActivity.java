@@ -8,6 +8,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.*;
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.map.*;
 import com.baidu.mapapi.search.*;
@@ -41,6 +45,7 @@ public class ParticularsActivity extends Activity {
     private boolean flag = false ;
     private MKRoute route;
     private LinearLayout linearLayout;
+
     private  TransitOverlay transitOverlay = null;//保存公交路线图层数据的变量，供浏览节点时使用
 
     private RouteOverlay routeOverlay = null;
@@ -340,7 +345,7 @@ public class ParticularsActivity extends Activity {
         //重置浏览节点的路线数据
         route = null;
         if (routeOverlay!=null) mapView.getOverlays().remove(routeOverlay);
-        if (transitOverlay!=null) mapView.getOverlays().remove(transitOverlay);
+        if (transi tOverlay!=null) mapView.getOverlays().remove(transitOverlay);
         mapView.refresh();
         routeOverlay = null;
         transitOverlay = null;
@@ -406,4 +411,6 @@ public class ParticularsActivity extends Activity {
         flag = true;
 //           initData();
     }
+
+
 }

@@ -13,6 +13,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.*;
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.map.*;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
@@ -50,6 +54,9 @@ public class MapListActivity  extends Activity {
     private String name;
     private String address;
     private String phone;
+    private LocationClient locationClient;
+    private double lng;
+    private double lat;
 
     public static  String[] spn1Data  = new String[] { "1000米内", "2000米内", "3000米内","4000米内","5000米内","6000米内" };
     @Override
@@ -164,7 +171,7 @@ public class MapListActivity  extends Activity {
 
     @Override
     protected void onResume() {
-
+        getMyLocation();
         mapView.onResume();
         super.onResume();
     }
@@ -362,6 +369,67 @@ public class MapListActivity  extends Activity {
         initData(tempText);
     }
 
+    public void locationOnclick(View view)
+    {
 
+
+//        bottomTextView.setText("定位中请稍等");
+        Toast.makeText(MapListActivity.this, "正在定位……", Toast.LENGTH_SHORT).show();
+        locationClient.start();
+        locationClient.requestLocation();
+    }
+    private void getMyLocation() {
+        Log.d("BaiduMapDemo", "getMyLocation");
+        locationClient= new LocationClient(this);
+        LocationClientOption option = new LocationClientOption();
+        option.setCoorType("bd09ll");
+        option.setAddrType("all");
+        option.setOpenGps(true);
+        option.setPriority(LocationClientOption.NetWorkFirst);
+        option.setScanSpan(5000);
+
+
+
+
+        locationClient.setLocOption(option);
+
+        locationClient.registerLocationListener(new BDLocationListener() {
+            @Override
+            public void onReceiveLocation(BDLocation bdLocation) {
+                if (bdLocation == null)
+                    return ;
+                Log.d("BaiduMapDemo", "onReceiveLocation address " + bdLocation.getAddrStr());
+
+                Log.d("BaiduMapDemo", "onReceiveLocation Latitude " + bdLocation.getLatitude());
+                Log.d("BaiduMapDemo", "onReceiveLocation Longitude " + bdLocation.getLongitude());
+                lng = bdLocation.getLongitude();
+                lat = bdLocation.getLatitude();
+
+                if (lng==4.9E-324||lat==4.9E-324)
+                {
+                    Toast.makeText(MapListActivity.this,"定位失败请重新定位",Toast.LENGTH_SHORT);
+
+                }else
+                {
+                    DemoApplication.locData.latitude = lat;
+                    DemoApplication.locData.longitude = lng;
+//                    bottomTextView.setText(bdLocation.getAddrStr());
+                    GeoPoint geoPoint = new GeoPoint( (int)(DemoApplication.locData.latitude*1E6),(int)(DemoApplication.locData.longitude*1E6));
+                    mapView.getController().setCenter(geoPoint);
+                }
+//                int offset = (int) (new Random().nextFloat() * 10000);
+//                GeoPoint point = new GeoPoint((int) (lng * 1E6) + offset, (int) (lat * 1E6) - offset);
+
+//                myLocationOverlay.setMyLocation(point);
+
+//                mapView.refresh();
+            }
+
+            @Override
+            public void onReceivePoi(BDLocation bdLocation) {
+            }
+        });
+
+    }
 
 }
